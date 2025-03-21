@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Client</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>https://reqres.in/api/users</h1>
+        <h2>http method request (GET, POST, PUT, PATCH, DELETE)</h2>
+        
+        <div class="main-content">
+            <div class="form-section">
+                <h3>Body Request</h3>
+                <form id="user-form">
+                    <div class="form-group">
+                        <label for="user-id">ID</label>
+                        <input type="number" id="user-id">
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="first-name">First Name</label>
+                        <input type="text" id="first-name">
+                    </div>
+                    <div class="form-group">
+                        <label for="last-name">Last Name</label>
+                        <input type="text" id="last-name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email">
+                    </div>
+                </form>
+                
+                <div class="button-row">
+                    <button id="get-btn" onclick="handleGet()">GET</button>
+                    <button id="post-btn" onclick="handlePost()">POST</button>
+                    <button id="put-btn" onclick="handlePut()">PUT</button>
+                    <button id="patch-btn" onclick="handlePatch()">PATCH</button>
+                    <button id="delete-btn" onclick="handleDelete()">DELETE</button>
+                </div>
+            </div>
+            
+            <div class="user-preview">
+                <div class="avatar-placeholder">
+                    <div class="avatar-circle"></div>
+                    <p class="name-preview">Name</p>
+                    <p class="email-preview">Email</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="response-container">
+            <h3>Response</h3>
+            <pre id="response-output">Response will appear here...</pre>
+        </div>
+        
+        <div class="user-list-container">
+            <h3>User List</h3>
+            <ul class="list-container"></ul>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
