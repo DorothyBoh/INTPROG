@@ -5,6 +5,7 @@ const baseURL = 'https://reqres.in/api/users';
 const responseOutput = document.getElementById('response-output');
 const namePreview = document.querySelector('.name-preview');
 const emailPreview = document.querySelector('.email-preview');
+const responseCardsContainer = document.getElementById('response-cards');
 
 // Update preview
 function updatePreview() {
@@ -29,14 +30,41 @@ document.getElementById('first-name').addEventListener('input', updatePreview);
 document.getElementById('last-name').addEventListener('input', updatePreview);
 document.getElementById('email').addEventListener('input', updatePreview);
 
-// Display response
+// Display response as a user card
 function displayResponse(data) {
-    responseOutput.textContent = JSON.stringify(data, null, 2);
+    responseOutput.textContent = ''; // Clear JSON response output
+    responseCardsContainer.innerHTML = ''; // Clear previous cards
+
+    if (data && data.data) {
+        const users = Array.isArray(data.data) ? data.data : [data.data];
+        displayResponseCards(users);
+    } else if (data && data.id) {
+        displayResponseCards([data]);
+    }
 }
+
+// Function to create user cards
+function displayResponseCards(users) {
+    responseCardsContainer.innerHTML = '';
+
+    users.forEach(user => {
+        const card = document.createElement('div');
+        card.classList.add('user-card');
+        card.innerHTML = `
+            <img src="${user.avatar || 'https://via.placeholder.com/150'}" alt="${user.first_name}">
+            <p><strong>${user.first_name} ${user.last_name}</strong></p>
+            <p>${user.email}</p>
+        `;
+        responseCardsContainer.appendChild(card);
+    });
+}
+
+
 
 // Display error
 function displayError(error) {
     responseOutput.textContent = `Error: ${error.message}`;
+    responseCardsContainer.innerHTML = '<p class="error-message">An error occurred</p>';
 }
 
 // GET - Fetch user(s)
@@ -72,60 +100,38 @@ function handleGet() {
         });
 }
 
-// POST - Create a new user
 function handlePost() {
-    const name = document.getElementById('name').value;
-    const firstName = document.getElementById('first-name').value;
-    const lastName = document.getElementById('last-name').value;
-    const email = document.getElementById('email').value;
-    
-    // Parse name into first and last if first/last aren't provided
-    let parsedFirstName = firstName;
-    let parsedLastName = lastName;
-    
-    if (!firstName && !lastName && name) {
-        const nameParts = name.split(' ');
-        if (nameParts.length > 1) {
-            parsedFirstName = nameParts[0];
-            parsedLastName = nameParts.slice(1).join(' ');
-        } else {
-            parsedFirstName = name;
-        }
-    }
-    
-    if (!parsedFirstName && !parsedLastName && !email) {
-        displayError(new Error('Please fill in at least name or email for POST request'));
+    const firstName = document.getElementById('first-name').value.trim();
+    const lastName = document.getElementById('last-name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const avatar = "https://via.placeholder.com/150"; // Default avatar
+
+    if (!firstName || !lastName || !email) {
+        displayError(new Error('First Name, Last Name, and Email are required for POST request'));
         return;
     }
-    
+
     const userData = {
-        first_name: parsedFirstName || '',
-        last_name: parsedLastName || '',
-        email: email || ''
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        avatar: avatar // Add avatar for user
     };
-    
+
     fetch(baseURL, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
     })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            displayResponse(data);
-            handleGet(); // Refresh user list
-        })
-        .catch(error => {
-            console.error('Error creating user:', error);
-            displayError(error);
-        });
+    .then(response => response.json())
+    .then(data => {
+        displayResponse(data);
+        displayResponseCards([userData]); // Ensure UI updates
+    })
+    .catch(error => displayError(error));
 }
+
+
 
 // PUT - Update an existing user (replace entire resource)
 function handlePut() {
@@ -297,6 +303,15 @@ function displayUsers(users) {
     });
     
     document.querySelector('.list-container').innerHTML = markup.join('');
+    
+    // Add click event to user cards to load user details
+    document.querySelectorAll('.list-container .card-container').forEach(card => {
+        card.addEventListener('click', () => {
+            const userId = card.getAttribute('data-id');
+            document.getElementById('user-id').value = userId;
+            handleGet();
+        });
+    });
 }
 
 // Clear form fields
