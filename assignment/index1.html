@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 50%;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+            background: white;
+        }
+        .user-card img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+        .btn {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            border-radius: 5px;
+        }
+        .get { background: green; }
+        .post { background: blue; }
+        .put { background: orange; }
+        .patch { background: purple; }
+        .delete { background: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>User Management</h2>
+        <form id="userForm">
+            <input type="text" name="id" placeholder="ID (Optional)">
+            <input type="text" name="name" placeholder="Name" required>
+            <input type="text" name="first_name" placeholder="First Name" required>
+            <input type="text" name="last_name" placeholder="Last Name" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="file" id="profileImage" name="profileImage">
+            <button type="submit" class="btn post">POST</button>
+        </form>
+        <button class="btn get" onclick="fetchUsers()">GET</button>
+        <button class="btn put" onclick="updateUser()">PUT</button>
+        <button class="btn patch" onclick="patchUser()">PATCH</button>
+        <button class="btn delete" onclick="deleteUser()">DELETE</button>
+        <h3>Original User List</h3>
+        <div id="originalUserList"></div>
+        <h3>Updated User List</h3>
+        <div id="updatedUserList"></div>
+    </div>
+    <script>
+        const apiUrl = "https://reqres.in/api/users";
+
+        function fetchUsers() {
+            const id = document.querySelector("input[name='id']").value.trim();
+            const url = id ? `${apiUrl}/${id}` : `${apiUrl}?per_page=10`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("originalUserList").innerHTML = "";
+                    if (id) {
+                        const user = data.data;
+                        if (user) {
+                            const userCard = `<div class='user-card'>
+                                <img src='${user.avatar}' alt='${user.first_name}'>
+                                <h4>${user.first_name} ${user.last_name}</h4>
+                                <p>${user.email}</p>
+                            </div>`;
+                            document.getElementById("originalUserList").innerHTML = userCard;
+                        } else {
+                            alert("User not found");
+                        }
+                    } else {
+                        data.data.forEach(user => {
+                            const userCard = `<div class='user-card'>
+                                <img src='${user.avatar}' alt='${user.first_name}'>
+                                <h4>${user.first_name} ${user.last_name}</h4>
+                                <p>${user.email}</p>
+                            </div>`;
+                            document.getElementById("originalUserList").innerHTML += userCard;
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching users:', error));
+        }
+
+        function refreshUpdatedUserList() {
+            fetchUsers();
+        }
+
+        function updateUser() {
+            const id = document.querySelector("input[name='id']").value;
+            fetch(`${apiUrl}/${id}`, { method: "PUT" })
+            .then(response => response.json())
+            .then(() => {
+                alert("User Updated Successfully");
+                refreshUpdatedUserList();
+            })
+            .catch(error => console.error('Error updating user:', error));
+        }
+
+        function patchUser() {
+            const id = document.querySelector("input[name='id']").value;
+            fetch(`${apiUrl}/${id}`, { method: "PATCH" })
+            .then(response => response.json())
+            .then(() => {
+                alert("User Partially Updated Successfully");
+                refreshUpdatedUserList();
+            })
+            .catch(error => console.error('Error patching user:', error));
+        }
+
+        function deleteUser() {
+            const id = document.querySelector("input[name='id']").value;
+            fetch(`${apiUrl}/${id}`, { method: "DELETE" })
+            .then(() => {
+                alert("User Deleted Successfully");
+                refreshUpdatedUserList();
+            })
+            .catch(error => console.error('Error deleting user:', error));
+        }
+
+        fetchUsers();
+    </script>
+</body>
+</html>
