@@ -73,79 +73,227 @@
         <div id="updatedUserList"></div>
     </div>
     <script>
-        const apiUrl = "https://reqres.in/api/users";
+const apiUrl = "https://reqres.in/api/users";
 
-        function fetchUsers() {
-            const id = document.querySelector("input[name='id']").value.trim();
-            const url = id ? `${apiUrl}/${id}` : `${apiUrl}?per_page=10`;
+document.getElementById("userForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    
+    const id = Date.now(); // Generate a unique ID
+    const firstName = this.first_name.value;
+    const lastName = this.last_name.value;
+    const email = this.email.value;
+    const profileImage = document.getElementById('profileImage').files[0];
+
+    // Create a user object
+    const userData = {
+        id: id,
+        first_name: firstName,
+        last_name: lastName,
+        email: email
+    };
+
+    // Update UI immediately
+    const userCard = `
+    <div class='user-card' data-id="${id}">
+        <img src='${profileImage ? URL.createObjectURL(profileImage) : 'https://via.placeholder.com/50'}' alt='${firstName}'>
+        <div>
+            <h4>${firstName} ${lastName}</h4>
+            <p>${email}</p>
+        </div>
+    </div>`;
+    
+    document.getElementById("updatedUserList").innerHTML += userCard;
+
+    // Send JSON request
+    fetch(apiUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert("User Created Successfully!");
+    })
+    .catch(error => {
+        console.error('Error creating user:', error);
+        // Remove the card if POST fails
+        document.querySelector(`#updatedUserList .user-card[data-id="${id}"]`).remove();
+    });
+});
+
+
+function fetchUsers() {
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const originalUserList = document.getElementById("originalUserList");
+            originalUserList.innerHTML = "";
             
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("originalUserList").innerHTML = "";
-                    if (id) {
-                        const user = data.data;
-                        if (user) {
-                            const userCard = `<div class='user-card'>
-                                <img src='${user.avatar}' alt='${user.first_name}'>
-                                <h4>${user.first_name} ${user.last_name}</h4>
-                                <p>${user.email}</p>
-                            </div>`;
-                            document.getElementById("originalUserList").innerHTML = userCard;
-                        } else {
-                            alert("User not found");
-                        }
-                    } else {
-                        data.data.forEach(user => {
-                            const userCard = `<div class='user-card'>
-                                <img src='${user.avatar}' alt='${user.first_name}'>
-                                <h4>${user.first_name} ${user.last_name}</h4>
-                                <p>${user.email}</p>
-                            </div>`;
-                            document.getElementById("originalUserList").innerHTML += userCard;
-                        });
-                    }
-                })
-                .catch(error => console.error('Error fetching users:', error));
-        }
+            data.data.forEach(user => {
+                const userCard = `
+                <div class='user-card'>
+                    <img src='${user.avatar}' alt='${user.first_name}'>
+                    <div>
+                        <h4>${user.first_name} ${user.last_name}</h4>
+                        <p>${user.email}</p>
+                    </div>
+                </div>`;
+                originalUserList.innerHTML += userCard;
+            });
+        })
+        .catch(error => console.error('Error fetching users:', error));
+}
 
-        function refreshUpdatedUserList() {
-            fetchUsers();
-        }
+function updateUser() {
+    const formData = new FormData(document.getElementById("userForm"));
+    const id = formData.get('id');
+    const firstName = formData.get('first_name');
+    const lastName = formData.get('last_name');
+    const email = formData.get('email');
+    const profileImage = document.getElementById('profileImage').files[0];
 
-        function updateUser() {
-            const id = document.querySelector("input[name='id']").value;
-            fetch(`${apiUrl}/${id}`, { method: "PUT" })
-            .then(response => response.json())
-            .then(() => {
-                alert("User Updated Successfully");
-                refreshUpdatedUserList();
-            })
-            .catch(error => console.error('Error updating user:', error));
-        }
+    if (!id) {
+        alert("Please enter an ID to update.");
+        return;
+    }
 
-        function patchUser() {
-            const id = document.querySelector("input[name='id']").value;
-            fetch(`${apiUrl}/${id}`, { method: "PATCH" })
-            .then(response => response.json())
-            .then(() => {
-                alert("User Partially Updated Successfully");
-                refreshUpdatedUserList();
-            })
-            .catch(error => console.error('Error patching user:', error));
-        }
+    const userData = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email
+    };
 
-        function deleteUser() {
-            const id = document.querySelector("input[name='id']").value;
-            fetch(`${apiUrl}/${id}`, { method: "DELETE" })
-            .then(() => {
-                alert("User Deleted Successfully");
-                refreshUpdatedUserList();
-            })
-            .catch(error => console.error('Error deleting user:', error));
-        }
+    fetch(`${apiUrl}/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Remove only from the updated user list
+        document.querySelectorAll("#updatedUserList .user-card").forEach(card => {
+            if (card.dataset.id === id) {
+                card.remove();
+            }
+        });
 
-        fetchUsers();
+        // Create new user card
+        const userCard = `
+        <div class='user-card' data-id="${id}">
+            <img src='${profileImage ? URL.createObjectURL(profileImage) : 'https://via.placeholder.com/50'}' alt='${firstName}'>
+            <div>
+                <h4>${firstName} ${lastName}</h4>
+                <p>${email}</p>
+            </div>
+        </div>`;
+
+        document.getElementById("updatedUserList").innerHTML += userCard;
+        alert("User Updated Successfully!");
+    })
+    .catch(error => console.error('Error updating user:', error));
+}
+
+
+function patchUser() {
+    const formData = new FormData(document.getElementById("userForm"));
+    const id = formData.get('id');
+    const firstName = formData.get('first_name');
+    const lastName = formData.get('last_name');
+    const email = formData.get('email');
+    const profileImage = document.getElementById('profileImage').files[0];
+
+    if (!id) {
+        alert("Please enter an ID to patch.");
+        return;
+    }
+
+    const userData = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email
+    };
+
+    fetch(`${apiUrl}/${id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Remove only from the updated user list
+        document.querySelectorAll("#updatedUserList .user-card").forEach(card => {
+            if (card.dataset.id === id) {
+                card.remove();
+            }
+        });
+
+        // Create new user card
+        const userCard = `
+        <div class='user-card' data-id="${id}">
+            <img src='${profileImage ? URL.createObjectURL(profileImage) : 'https://via.placeholder.com/50'}' alt='${firstName}'>
+            <div>
+                <h4>${firstName} ${lastName}</h4>
+                <p>${email}</p>
+            </div>
+        </div>`;
+
+        document.getElementById("updatedUserList").innerHTML += userCard;
+        alert("User Partially Updated Successfully!");
+    })
+    .catch(error => console.error('Error patching user:', error));
+}
+
+
+function deleteUser() {
+    const formData = new FormData(document.getElementById("userForm"));
+    const id = formData.get('id');
+    const email = formData.get('email');
+    
+    fetch(`${apiUrl}/${id}`, { method: "DELETE" })
+    .then(() => {
+        // Remove the specific user card
+        const existingCards = document.querySelectorAll("#updatedUserList .user-card");
+        existingCards.forEach(card => {
+            if (card.querySelector('p').textContent === email) {
+                card.remove();
+            }
+        });
+        
+        alert("User Deleted Successfully");
+    })
+    .catch(error => console.error('Error deleting user:', error));
+}
+
+function refreshUpdatedUserList() {
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const updatedUserList = document.getElementById("updatedUserList");
+            updatedUserList.innerHTML = ""; // Clear previous users
+            
+            data.data.forEach(user => {
+                const userCard = `
+                <div class='user-card' data-id="${user.id}">
+                    <img src='${user.avatar}' alt='${user.first_name}'>
+                    <div>
+                        <h4>${user.first_name} ${user.last_name}</h4>
+                        <p>${user.email}</p>
+                    </div>
+                </div>`;
+                updatedUserList.innerHTML += userCard;
+            });
+        })
+        .catch(error => console.error('Error fetching updated users:', error));
+}
+
+// Initial fetch
+fetchUsers();
     </script>
 </body>
 </html>
