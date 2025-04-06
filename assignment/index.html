@@ -3,74 +3,874 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Client</title>
-    <link rel="stylesheet" href="style.css">
+    <title>ReqRes</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f7f7;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .app-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .app-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .control-panel {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="email"], input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 80px;
+        }
+        #get {
+            background-color: #3498db;
+            color: white;
+        }
+        #post {
+            background-color: #2ecc71;
+            color: white;
+        }
+        #put {
+            background-color: #f39c12;
+            color: white;
+        }
+        #patch {
+            background-color: #9b59b6;
+            color: white;
+        }
+        #delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+        #clear {
+            background-color: #95a5a6;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .search-container {
+            margin-bottom: 15px;
+        }
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        .user-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .user-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .user-card.updated {
+            border: 2px solid #2ecc71;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+        }
+        .user-header {
+            padding: 15px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .user-card.updated .user-header {
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .user-card.updated .avatar {
+            border-color: #2ecc71;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+        .user-email {
+            margin: 0;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        .user-id {
+            background-color: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .user-card.updated .user-id {
+            background-color: #2ecc71;
+        }
+        .user-body {
+            padding: 15px;
+        }
+        .response-data {
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            border-left: 3px solid #3498db;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .user-card.updated .response-data {
+            border-left-color: #2ecc71;
+        }
+        .user-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+        .user-actions button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            flex: none;
+        }
+        .user-card.updated .user-actions {
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        .selected {
+            border: 2px solid #3498db;
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        .user-card.updated.selected {
+            border: 2px solid #2ecc71;
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: #3498db;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            display: none;
+        }
+        .spinner-container {
+            padding: 20px;
+            text-align: center;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .updated-badge {
+            background-color: #2ecc71;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            display: inline-block;
+        }
+        .image-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .preview-container {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px dashed #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .preview-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .file-upload label {
+            background-color: #3498db;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-upload label:hover {
+            background-color: #2980b9;
+        }
+        .status-message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+            display: none;
+        }
+        .status-success {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        .status-error {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>https://reqres.in/api/users</h1>
-        <h2>http method request (GET, POST, PUT, PATCH, DELETE)</h2>
-        
-        <div class="main-content">
-            <div class="form-section">
-                <h3>Body Request</h3>
+        <div class="app-layout">
+            <!-- Left Side: Control Panel -->
+            <div class="control-panel">
+                <div class="search-container">
+                    <label for="search">Search Users</label>
+                    <input type="text" id="search" placeholder="Search by name, email, or ID..." />
+                </div>
+                
                 <form id="user-form">
                     <div class="form-group">
-                        <label for="user-id">ID</label>
-                        <input type="number" id="user-id">
+                        <label for="userId">User ID (for PUT/PATCH/DELETE)</label>
+                        <input type="number" id="userId" placeholder="ID of existing user">
                     </div>
                     <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" placeholder="Enter first name">
                     </div>
                     <div class="form-group">
-                        <label for="first-name">First Name</label>
-                        <input type="text" id="first-name">
-                    </div>
-                    <div class="form-group">
-                        <label for="last-name">Last Name</label>
-                        <input type="text" id="last-name">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" placeholder="Enter last name">
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email">
+                        <input type="email" id="email" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label>Profile Picture</label>
+                        <div class="image-preview">
+                            <div class="preview-container" id="image-preview">
+                                <span id="preview-text">No image</span>
+                            </div>
+                            <div class="file-upload">
+                                <label for="avatar-upload">Choose Image</label>
+                                <input type="file" id="avatar-upload" accept="image/*">
+                            </div>
+                        </div>
                     </div>
                 </form>
                 
-                <div class="button-row">
-                    <button id="get-btn" onclick="handleGet()">GET</button>
-                    <button id="post-btn" onclick="handlePost()">POST</button>
-                    <button id="put-btn" onclick="handlePut()">PUT</button>
-                    <button id="patch-btn" onclick="handlePatch()">PATCH</button>
-                    <button id="delete-btn" onclick="handleDelete()">DELETE</button>
+                <div id="status-message" class="status-message"></div>
+                
+                <div class="buttons">
+                    <button id="get">GET</button>
+                    <button id="post">POST</button>
+                    <button id="put">PUT</button>
+                    <button id="patch">PATCH</button>
+                    <button id="delete">DELETE</button>
+                    <button id="clear">Clear</button>
                 </div>
             </div>
             
-            <div class="user-preview">
-                <div class="avatar-placeholder">
-                    <div class="avatar-circle"></div>
-                    <p class="name-preview">Name</p>
-                    <p class="email-preview">Email</p>
+            <!-- Right Side: Users Grid -->
+            <div>
+                <div class="spinner-container">
+                    <div class="spinner" id="spinner"></div>
                 </div>
+                <div class="user-grid" id="user-grid"></div>
             </div>
         </div>
-        
-        <div id="response-container">
-            <h3>Response</h3>
-            <pre id="response-output">Response will appear here...</pre>
-        </div>
-        
-        <div id="response-cards-section">
-            <h3>Response Data</h3>
-            <div id="response-cards" class="response-cards-container"></div>
-        </div>
-        
-        <div class="user-list-container">
-            <h3>User List</h3>
-            <ul class="list-container"></ul>
-        </div>
     </div>
-    
-    <script src="script.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Constants
+            const API_URL = 'https://reqres.in/api/users';
+            
+            // DOM Elements
+            const userGrid = document.getElementById('user-grid');
+            const searchInput = document.getElementById('search');
+            const spinner = document.getElementById('spinner');
+            const spinnerContainer = document.querySelector('.spinner-container');
+            const statusMessage = document.getElementById('status-message');
+            
+            // Form Elements
+            const userForm = document.getElementById('user-form');
+            const userIdInput = document.getElementById('userId');
+            const firstNameInput = document.getElementById('firstName');
+            const lastNameInput = document.getElementById('lastName');
+            const emailInput = document.getElementById('email');
+            const avatarUpload = document.getElementById('avatar-upload');
+            const imagePreview = document.getElementById('image-preview');
+            const previewText = document.getElementById('preview-text');
+            
+            // Buttons
+            const getButton = document.getElementById('get');
+            const postButton = document.getElementById('post');
+            const putButton = document.getElementById('put');
+            const patchButton = document.getElementById('patch');
+            const deleteButton = document.getElementById('delete');
+            const clearButton = document.getElementById('clear');
+            
+            // State
+            let users = [];
+            let selectedUserId = null;
+            let imageBase64 = null;
+            
+            // Functions
+            function showSpinner() {
+                spinner.style.display = 'block';
+                spinnerContainer.style.display = 'block';
+            }
+            
+            function hideSpinner() {
+                spinner.style.display = 'none';
+                spinnerContainer.style.display = 'none';
+            }
+            
+            function showStatus(message, isError = false) {
+                statusMessage.textContent = message;
+                statusMessage.style.display = 'block';
+                
+                if (isError) {
+                    statusMessage.className = 'status-message status-error';
+                } else {
+                    statusMessage.className = 'status-message status-success';
+                }
+                
+                // Auto hide after 3 seconds
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 3000);
+            }
+            
+            function fetchUsers() {
+                showSpinner();
+                fetch(API_URL)
+                    .then(response => response.json())
+                    .then(data => {
+                        users = data.data.map(user => ({
+                            ...user,
+                            responseData: data,
+                            isUpdated: false
+                        }));
+                        renderUsers(users);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching users:', error);
+                        userGrid.innerHTML = `<p>Error fetching users: ${error.message}</p>`;
+                        showStatus('Error fetching users: ' + error.message, true);
+                    })
+                    .finally(() => {
+                        hideSpinner();
+                    });
+            }
+            
+            function renderUsers(usersToRender) {
+                userGrid.innerHTML = '';
+                
+                if (usersToRender.length === 0) {
+                    userGrid.innerHTML = '<p>No users found.</p>';
+                    return;
+                }
+                
+                usersToRender.forEach(user => {
+                    const userCard = document.createElement('div');
+                    userCard.className = 'user-card';
+                    
+                    if (user.isUpdated) {
+                        userCard.classList.add('updated');
+                    }
+                    
+                    if (user.id === selectedUserId) {
+                        userCard.classList.add('selected');
+                    }
+                    
+                    // Format response data for display
+                    let responseHTML = '';
+                    if (user.responseData) {
+                        const displayData = { ...user.responseData };
+                        // If the response includes all users data, just show relevant info
+                        if (displayData.data && Array.isArray(displayData.data)) {
+                            displayData.data = '[ ... array of users ... ]';
+                        }
+                        responseHTML = `
+                            <div class="response-data">
+                                ${JSON.stringify(displayData, null, 2)}
+                            </div>
+                        `;
+                    }
+                    
+                    // Create updated badge if needed
+                    const updatedBadge = user.isUpdated ? '<span class="updated-badge">Updated</span>' : '';
+                    
+                    userCard.innerHTML = `
+                        <div class="user-header">
+                            <img src="${user.avatar}" alt="${user.first_name}" class="avatar">
+                            <div class="user-info">
+                                <h3 class="user-name">${user.first_name} ${user.last_name} ${updatedBadge}</h3>
+                                <p class="user-email">${user.email}</p>
+                                <span class="user-id">ID: ${user.id}</span>
+                            </div>
+                        </div>
+                         </div>
+                        <div class="user-body">
+                            <strong>API Response:</strong>
+                            ${responseHTML}
+                        </div>
+                        <div class="user-actions">
+                            <button class="select-btn" data-id="${user.id}">Select</button>
+                            <button class="delete-btn" data-id="${user.id}">Delete</button>
+                        </div>
+                    `;
+                    
+                    userGrid.appendChild(userCard);
+                });
+                
+                // Add event listeners to the buttons in each card
+                document.querySelectorAll('.select-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const userId = parseInt(e.target.dataset.id);
+                        const user = users.find(u => u.id === userId);
+                        if (user) {
+                            selectUser(user);
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const userId = parseInt(e.target.dataset.id);
+                        deleteUser(userId);
+                    });
+                });
+            }
+            
+            function selectUser(user) {
+                selectedUserId = user.id;
+                
+                // Fill form inputs
+                userIdInput.value = user.id;
+                firstNameInput.value = user.first_name;
+                lastNameInput.value = user.last_name;
+                emailInput.value = user.email;
+                
+                // Display user avatar in preview
+                imagePreview.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = user.avatar;
+                img.alt = user.first_name;
+                imagePreview.appendChild(img);
+                
+                // Reset the file input
+                avatarUpload.value = '';
+                imageBase64 = null;
+                
+                // Update UI to show selection
+                document.querySelectorAll('.user-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                const selectedBtns = document.querySelectorAll(`.select-btn[data-id="${user.id}"]`);
+                if (selectedBtns.length > 0) {
+                    const selectedCard = selectedBtns[0].closest('.user-card');
+                    if (selectedCard) {
+                        selectedCard.classList.add('selected');
+                    }
+                }
+                
+                showStatus(`User ${user.first_name} ${user.last_name} selected`);
+            }
+            
+            function clearForm() {
+                userForm.reset();
+                selectedUserId = null;
+                
+                // Reset image preview
+                imagePreview.innerHTML = '<span id="preview-text">No image</span>';
+                imageBase64 = null;
+                
+                document.querySelectorAll('.user-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                showStatus('Form cleared');
+            }
+            
+            function getUserDataFromForm() {
+                const userData = {
+                    first_name: firstNameInput.value.trim(),
+                    last_name: lastNameInput.value.trim(),
+                    email: emailInput.value.trim()
+                };
+                
+                // Add avatar if present
+                if (imageBase64) {
+                    userData.avatar = imageBase64;
+                }
+                
+                return userData;
+            }
+            
+            function filterUsers() {
+                const searchTerm = searchInput.value.toLowerCase();
+                
+                if (!searchTerm) {
+                    renderUsers(users);
+                    return;
+                }
+                
+                const filteredUsers = users.filter(user => {
+                    return (
+                        user.first_name.toLowerCase().includes(searchTerm) ||
+                        user.last_name.toLowerCase().includes(searchTerm) ||
+                        user.email.toLowerCase().includes(searchTerm) ||
+                        user.id.toString().includes(searchTerm)
+                    );
+                });
+                
+                renderUsers(filteredUsers);
+            }
+            
+            // Handle image preview
+            avatarUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                
+                if (file) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(event) {
+                        // Store base64 image
+                        imageBase64 = event.target.result;
+                        
+                        // Update preview
+                        imagePreview.innerHTML = '';
+                        const img = document.createElement('img');
+                        img.src = imageBase64;
+                        img.alt = 'Preview';
+                        imagePreview.appendChild(img);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.innerHTML = '<span id="preview-text">No image</span>';
+                    imageBase64 = null;
+                }
+            });
+            
+            // API Operations
+            async function performGet() {
+                try {
+                    showSpinner();
+                    const response = await fetch(API_URL);
+                    const data = await response.json();
+                    
+                    users = data.data.map(user => ({
+                        ...user,
+                        responseData: data,
+                        isUpdated: false // Reset update status on fresh fetch
+                    }));
+                    
+                    renderUsers(users);
+                    showStatus('Successfully fetched users');
+                } catch (error) {
+                    console.error('GET Error:', error);
+                    userGrid.innerHTML = `<p>Error fetching users: ${error.message}</p>`;
+                    showStatus('Error fetching users: ' + error.message, true);
+                } finally {
+                    hideSpinner();
+                }
+            }
+            
+            async function performPost() {
+                const userData = getUserDataFromForm();
+                
+                if (!userData.first_name || !userData.last_name || !userData.email) {
+                    showStatus('Please fill in name and email fields', true);
+                    return;
+                }
+                
+                try {
+                    showSpinner();
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // Add the new user to our local state
+                    const avatarUrl = userData.avatar || '/api/placeholder/80/80';
+                    const newUser = {
+                        ...userData,
+                        id: data.id,
+                        avatar: avatarUrl,
+                        responseData: data,
+                        isUpdated: true // Mark as updated
+                    };
+                    
+                    users.unshift(newUser);
+                    renderUsers(users);
+                    clearForm();
+                    showStatus('User created successfully');
+                    
+                } catch (error) {
+                    console.error('POST Error:', error);
+                    showStatus('Error creating user: ' + error.message, true);
+                } finally {
+                    hideSpinner();
+                }
+            }
+            
+            async function performPut() {
+                const userId = userIdInput.value;
+                const userData = getUserDataFromForm();
+                
+                if (!userId) {
+                    showStatus('Please select a user or enter a user ID', true);
+                    return;
+                }
+                
+                if (!userData.first_name || !userData.last_name || !userData.email) {
+                    showStatus('Please fill in name and email fields', true);
+                    return;
+                }
+                
+                try {
+                    showSpinner();
+                    const response = await fetch(`${API_URL}/${userId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // Update user in local state
+                    const userIndex = users.findIndex(user => user.id.toString() === userId);
+                    if (userIndex !== -1) {
+                        // Update avatar if available, otherwise keep existing
+                        const avatarUrl = userData.avatar || users[userIndex].avatar;
+                        
+                        users[userIndex] = {
+                            ...users[userIndex],
+                            ...userData,
+                            avatar: avatarUrl,
+                            responseData: data,
+                            isUpdated: true // Mark as updated
+                        };
+                        renderUsers(users);
+                        showStatus(`User ${userData.first_name} updated successfully`);
+                    }
+                    
+                } catch (error) {
+                    console.error('PUT Error:', error);
+                    showStatus('Error updating user: ' + error.message, true);
+                } finally {
+                    hideSpinner();
+                }
+            }
+            
+            async function performPatch() {
+                const userId = userIdInput.value;
+                const userData = getUserDataFromForm();
+                
+                if (!userId) {
+                    showStatus('Please select a user or enter a user ID', true);
+                    return;
+                }
+                
+                // Only include fields that have values
+                const patchData = {};
+                if (userData.first_name) patchData.first_name = userData.first_name;
+                if (userData.last_name) patchData.last_name = userData.last_name;
+                if (userData.email) patchData.email = userData.email;
+                if (userData.avatar) patchData.avatar = userData.avatar;
+                
+                if (Object.keys(patchData).length === 0) {
+                    showStatus('Please fill in at least one field to update', true);
+                    return;
+                }
+                
+                try {
+                    showSpinner();
+                    const response = await fetch(`${API_URL}/${userId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(patchData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // Update user in local state
+                    const userIndex = users.findIndex(user => user.id.toString() === userId);
+                    if (userIndex !== -1) {
+                        users[userIndex] = {
+                            ...users[userIndex],
+                            ...patchData,
+                            responseData: data,
+                            isUpdated: true // Mark as updated
+                        };
+                        renderUsers(users);
+                        showStatus(`User partially updated successfully`);
+                    }
+                    
+                } catch (error) {
+                    console.error('PATCH Error:', error);
+                    showStatus('Error updating user: ' + error.message, true);
+                } finally {
+                    hideSpinner();
+                }
+            }
+            
+            async function deleteUser(userId) {
+                try {
+                    showSpinner();
+                    const response = await fetch(`${API_URL}/${userId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    // For DELETE, reqres returns an empty response with 204 status
+                    if (response.status === 204 || response.ok) {
+                        // Remove user from local state
+                        users = users.filter(user => user.id.toString() !== userId.toString());
+                        renderUsers(users);
+                        
+                        if (selectedUserId === userId) {
+                            clearForm();
+                        }
+                        
+                        showStatus(`User with ID ${userId} deleted successfully`);
+                    } else {
+                        showStatus(`Error deleting user: ${response.statusText}`, true);
+                    }
+                    
+                } catch (error) {
+                    console.error('DELETE Error:', error);
+                    showStatus('Error deleting user: ' + error.message, true);
+                } finally {
+                    hideSpinner();
+                }
+            }
+            
+            async function performDelete() {
+                const userId = userIdInput.value;
+                
+                if (!userId) {
+                    showStatus('Please select a user or enter a user ID', true);
+                    return;
+                }
+                
+                deleteUser(parseInt(userId));
+            }
+            
+            // Event Listeners
+            getButton.addEventListener('click', performGet);
+            postButton.addEventListener('click', performPost);
+            putButton.addEventListener('click', performPut);
+            patchButton.addEventListener('click', performPatch);
+            deleteButton.addEventListener('click', performDelete);
+            clearButton.addEventListener('click', () => {
+                clearForm();
+                searchInput.value = '';
+                filterUsers();
+            });
+            
+            searchInput.addEventListener('input', filterUsers);
+            
+            // Initial fetch
+            fetchUsers();
+        });
+    </script>
 </body>
 </html>
